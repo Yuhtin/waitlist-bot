@@ -10,9 +10,12 @@ repositories {
 }
 
 dependencies {
-    implementation("net.dv8tion:JDA:VERSION") {
+    implementation("net.dv8tion:JDA:5.0.0-beta.15") {
         exclude(module = "opus-java")
     }
+
+    implementation("org.projectlombok:lombok:1.18.20")
+    annotationProcessor("org.projectlombok:lombok:1.18.20")
 }
 
 tasks.test {
