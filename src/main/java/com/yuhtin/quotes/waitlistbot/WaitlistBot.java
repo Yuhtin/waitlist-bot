@@ -4,7 +4,6 @@ import com.yuhtin.quotes.waitlistbot.bot.DiscordBot;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 
-import javax.xml.crypto.dsig.spec.XPathType;
 import java.util.Date;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.LogRecord;

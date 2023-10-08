@@ -12,6 +12,7 @@ repositories {
 dependencies {
     implementation("net.dv8tion:JDA:5.0.0-beta.15") {
         exclude(module = "opus-java")
+        exclude(group = "org.apache.logging.log4j")
     }
 
     implementation("org.projectlombok:lombok:1.18.20")
