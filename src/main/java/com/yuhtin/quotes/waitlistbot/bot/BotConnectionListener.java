@@ -13,7 +13,7 @@ public class BotConnectionListener extends ListenerAdapter {
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
-        bot.onReady();
         bot.serve(event.getJDA());
+        bot.onReady();
     }
 }
