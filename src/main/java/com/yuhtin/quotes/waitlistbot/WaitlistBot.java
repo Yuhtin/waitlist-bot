@@ -6,7 +6,6 @@ import com.yuhtin.quotes.waitlistbot.constants.BotConstants;
 import com.yuhtin.quotes.waitlistbot.repository.MongoClientManager;
 import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
 import lombok.Getter;
-import lombok.val;
 import net.dv8tion.jda.api.JDA;
 
 import java.util.Date;
@@ -50,9 +49,7 @@ public class WaitlistBot implements DiscordBot {
     private void loadConfig() {
         config = Config.loadConfig("config.yml");
         if (config == null) {
-            logger.info("Config not found, creating a new config!");
             System.exit(0);
-
             return;
         }
 

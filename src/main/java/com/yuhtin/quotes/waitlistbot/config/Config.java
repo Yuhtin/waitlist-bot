@@ -17,10 +17,10 @@ public class Config {
     private long webhookChannelId;
     private long subscribersCountChannelId;
 
-    private String mongoAddress;
-    private String mongoLogin;
-    private String mongoDatabase;
-    private String token;
+    private String mongoAddress = "localhost";
+    private String mongoLogin = "user@password";
+    private String mongoDatabase = "test";
+    private String token = "none";
 
     public static Config loadConfig(String path) {
         try {
@@ -36,7 +36,8 @@ public class Config {
                     writer.flush();
                 }
 
-                logger.warning("Put a valid token in the bot's config");
+                logger.severe("Config not found, creating a new config!");
+                logger.severe("Put a valid token in the bot's config");
                 return null;
             }
 
