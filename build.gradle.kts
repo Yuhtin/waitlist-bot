@@ -1,9 +1,17 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
-    id("java")
+    java
+    application
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 group = "com.yuhtin.quotes"
 version = "1.0-SNAPSHOT"
+
+application {
+    mainClass = "com.yuhtin.quotes.waitlistbot.WaitlistBot"
+}
 
 repositories {
     mavenCentral()
