@@ -1,5 +1,6 @@
 package com.yuhtin.quotes.waitlistbot.bot;
 
+import com.yuhtin.quotes.waitlistbot.config.Config;
 import net.dv8tion.jda.api.JDA;
 
 public interface DiscordBot {
@@ -23,5 +24,6 @@ public interface DiscordBot {
      */
     void serve(JDA jda);
 
+    Config getConfig();
 
 }
