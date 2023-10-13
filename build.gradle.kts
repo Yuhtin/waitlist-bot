@@ -23,8 +23,19 @@ dependencies {
         exclude(group = "org.apache.logging.log4j")
     }
 
+    implementation("org.mongodb:mongodb-driver-sync:4.4.0")
+    implementation("com.google.guava:guava:31.0.1-jre")
+    implementation("com.google.code.gson:gson:2.8.8")
+
     implementation("org.projectlombok:lombok:1.18.20")
     annotationProcessor("org.projectlombok:lombok:1.18.20")
 
-    implementation("com.google.code.gson:gson:2.8.8")
+}
+
+tasks.withType<ShadowJar> {
+    archiveClassifier.set("")
+    archiveFileName.set("bot.jar")
+    destinationDirectory.set(file(project.rootDir.parent.toString() + "/artifacts"))
+
+    println("Shadowing ${project.name} to ${destinationDirectory.get()}")
 }
