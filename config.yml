@@ -1,0 +1,8 @@
+{
+  "webhookChannelId": 0,
+  "subscribersCountChannelId": 0,
+  "token": "",
+  "mongoAddress": "localhost",
+  "mongoLogin": "user:password",
+  "mongoDatabase": "waitlistbot"
+}
