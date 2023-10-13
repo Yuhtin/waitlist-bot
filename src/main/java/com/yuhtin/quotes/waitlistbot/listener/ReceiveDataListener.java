@@ -2,7 +2,6 @@ package com.yuhtin.quotes.waitlistbot.listener;
 
 import com.google.gson.Gson;
 import com.yuhtin.quotes.waitlistbot.config.Config;
-import com.yuhtin.quotes.waitlistbot.model.DataActionType;
 import com.yuhtin.quotes.waitlistbot.model.User;
 import com.yuhtin.quotes.waitlistbot.model.WebhookData;
 import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
@@ -26,7 +25,7 @@ public class ReceiveDataListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         if (event.getChannel().getIdLong() != config.getWebhookChannelId()) return;
-        if (!event.getMessage().isWebhookMessage()) return;
+        //if (!event.getMessage().isWebhookMessage()) return;
 
         String content = event.getMessage().getContentRaw();
         if (!content.startsWith("{")) return;
@@ -35,18 +34,14 @@ public class ReceiveDataListener extends ListenerAdapter {
         if (webhookData == null) return;
 
         User user = User.builder()
+                .memberId(webhookData.getMemberId())
                 .creationDate(webhookData.getCreationDate())
                 .email(webhookData.getMemberEmail())
-                .discordName(null)
+                //.discordName("yuhtin")
                 .build();
 
-        if (webhookData.getActionType() == DataActionType.ADDED) {
-            UserRepository.instance().insert(user);
-            logger.info("Added user " + user.email() + " to the database");
-        } else if (webhookData.getActionType() == DataActionType.UPDATED) {
-            UserRepository.instance().replace(user);
-            logger.info("Updated user " + user.email() + " in the database");
-        }
+        UserRepository.instance().insert(user);
+        logger.info("User " + user.email() + " updated in database!");
 
         updateSubscribersChannelCount(event.getGuild(), webhookData.getSubscribersCount());
     }
@@ -57,8 +52,6 @@ public class ReceiveDataListener extends ListenerAdapter {
 
         channel.getManager()
                 .setName("Waitlist Subscribers: " + subscribersCount)
-                .queue();
-
-        logger.info("Updated subscribers count to " + subscribersCount);
+                .queue(t -> logger.info("Updated subscribers count to " + subscribersCount));
     }
 }
