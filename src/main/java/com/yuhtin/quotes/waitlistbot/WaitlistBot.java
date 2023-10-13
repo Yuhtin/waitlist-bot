@@ -1,7 +1,12 @@
 package com.yuhtin.quotes.waitlistbot;
 
 import com.yuhtin.quotes.waitlistbot.bot.DiscordBot;
+import com.yuhtin.quotes.waitlistbot.config.Config;
+import com.yuhtin.quotes.waitlistbot.constants.BotConstants;
+import com.yuhtin.quotes.waitlistbot.repository.MongoClientManager;
+import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
 import lombok.Getter;
+import lombok.val;
 import net.dv8tion.jda.api.JDA;
 
 import java.util.Date;
@@ -16,13 +21,17 @@ public class WaitlistBot implements DiscordBot {
     private static final WaitlistBot INSTANCE = new WaitlistBot();
     private final Logger logger = Logger.getLogger("WaitlistBot");
 
+    @Getter private Config config;
     private JDA jda;
 
     @Override
     public void onEnable() {
         formatLogger(logger);
-
         getLogger().info("Enabling bot...");
+
+        loadConfig();
+        setupMongoClient();
+
         getLogger().info("Bot enabled!");
     }
 
@@ -32,9 +41,33 @@ public class WaitlistBot implements DiscordBot {
         getLogger().info("Logged in as @" + jda.getSelfUser().getName());
     }
 
+
     @Override
     public void serve(JDA jda) {
         this.jda = jda;
+    }
+
+    private void loadConfig() {
+        config = Config.loadConfig("config.yml");
+        if (config == null) {
+            logger.info("Config not found, creating a new config!");
+            System.exit(0);
+
+            return;
+        }
+
+        logger.info("Config loaded!");
+    }
+
+    private void setupMongoClient() {
+        String mongoUri = BotConstants.MONGO_URI
+                .replace("$login$", config.getMongoLogin())
+                .replace("$address$", config.getMongoAddress());
+
+        MongoClientManager mongoClientManager = MongoClientManager.getInstance();
+        mongoClientManager.load(mongoUri, config.getMongoDatabase());
+
+        mongoClientManager.injectTables(UserRepository.instance());
     }
 
     private void formatLogger(Logger logger) {
