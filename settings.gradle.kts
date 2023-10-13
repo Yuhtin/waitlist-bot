@@ -1,2 +1,2 @@
-rootProject.name = "goodgame-waitlist-bot"
+rootProject.name = "waitlist-bot"
 
