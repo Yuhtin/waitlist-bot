@@ -18,7 +18,7 @@ public class Config {
     private long subscribersCountChannelId;
 
     private String mongoAddress = "localhost";
-    private String mongoLogin = "user@password";
+    private String mongoLogin = "user:password";
     private String mongoDatabase = "test";
     private String token = "none";
 
