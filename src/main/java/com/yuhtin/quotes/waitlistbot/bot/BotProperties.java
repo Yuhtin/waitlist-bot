@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 public class BotProperties {
 
-    private final String token;
     private final List<CacheFlag> disabledCaches;
     private final List<GatewayIntent> enabledIntents;
 

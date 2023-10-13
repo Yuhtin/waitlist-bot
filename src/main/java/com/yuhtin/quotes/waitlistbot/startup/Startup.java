@@ -7,13 +7,13 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class Startup {
 
     public static void main(String[] args) {
         BotProperties properties = BotProperties.builder()
-                .token("MTE2MDMxNjgwOTQwNTI4ODUxOA.GHfBQb._0KEMhAJ_JCeXZ6tkCh8ytyMdMrZvuBReyVmH0")
-                .disabledCaches(Arrays.stream(CacheFlag.values()).toList())
+                .disabledCaches(Arrays.stream(CacheFlag.values()).collect(Collectors.toList()))
                 .enabledIntents(Arrays.asList(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT))
                 .build();
 
