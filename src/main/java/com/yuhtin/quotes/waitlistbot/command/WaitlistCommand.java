@@ -21,6 +21,7 @@ public class WaitlistCommand extends ListenerAdapter {
                 .setEphemeral(true)
                 .queue(interaction -> {
                     EmbedBuilder embedBuilder = new EmbedBuilder();
+
                     embedBuilder.setAuthor("Waitlist Stats", "", "https://cdn-icons-png.flaticon.com/512/10466/10466166.png");
                     embedBuilder.setColor(Color.CYAN);
                     embedBuilder.setFooter("Goodgame Studios © 2023", enterpriseIconUrl);

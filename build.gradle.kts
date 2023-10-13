@@ -17,8 +17,6 @@ dependencies {
 
     implementation("org.projectlombok:lombok:1.18.20")
     annotationProcessor("org.projectlombok:lombok:1.18.20")
-}
 
-tasks.test {
-    useJUnitPlatform()
+    implementation("com.google.code.gson:gson:2.8.8")
 }
