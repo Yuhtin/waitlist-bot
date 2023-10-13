@@ -39,6 +39,14 @@ public class UserRepository implements MongoRepository<User> {
         return GSON.fromJson(document.toJson(), User.class);
     }
 
+    @Nullable
+    public User findByDiscordName(String discordName) {
+        val document = userTable.find(Filters.eq("discordName", discordName.toLowerCase())).first();
+        if (document == null) return null;
+
+        return GSON.fromJson(document.toJson(), User.class);
+    }
+
     @Override
     public void insert(User data) {
         if (find(data.memberId()) != null) {

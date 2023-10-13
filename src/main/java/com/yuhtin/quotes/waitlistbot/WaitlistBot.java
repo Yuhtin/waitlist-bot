@@ -1,12 +1,16 @@
 package com.yuhtin.quotes.waitlistbot;
 
 import com.yuhtin.quotes.waitlistbot.bot.DiscordBot;
+import com.yuhtin.quotes.waitlistbot.command.CommandRegistry;
+import com.yuhtin.quotes.waitlistbot.command.impl.WaitlistCommand;
 import com.yuhtin.quotes.waitlistbot.config.Config;
 import com.yuhtin.quotes.waitlistbot.constants.BotConstants;
+import com.yuhtin.quotes.waitlistbot.listener.ReceiveDataListener;
 import com.yuhtin.quotes.waitlistbot.repository.MongoClientManager;
 import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.interactions.commands.Command;
 
 import java.util.Date;
 import java.util.logging.ConsoleHandler;
@@ -38,12 +42,19 @@ public class WaitlistBot implements DiscordBot {
     public void onReady() {
         getLogger().info("Bot ready!");
         getLogger().info("Logged in as @" + jda.getSelfUser().getName());
-    }
 
+        registerListeners();
+        CommandRegistry.of(jda).register();
+    }
 
     @Override
     public void serve(JDA jda) {
         this.jda = jda;
+    }
+
+    private void registerListeners() {
+        ReceiveDataListener receiveDataListener = new ReceiveDataListener(config);
+        jda.addEventListener(receiveDataListener);
     }
 
     private void loadConfig() {

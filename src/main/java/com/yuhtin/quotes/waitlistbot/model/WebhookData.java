@@ -14,6 +14,7 @@ public class WebhookData {
     private final DataActionType actionType;
     private final String memberId;
     private final String memberEmail;
+    private final String discordName;
     private final String creationDate;
     private final int subscribersCount;
 
