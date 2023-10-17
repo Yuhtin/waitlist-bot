@@ -20,6 +20,10 @@ public class Config {
     private String mongoAddress = "localhost";
     private String mongoLogin = "user:password";
     private String mongoDatabase = "test";
+
+    private String redisAddress = "localhost";
+    private String redisPassword = "test";
+
     private String token = "none";
 
     public static Config loadConfig(String path) {

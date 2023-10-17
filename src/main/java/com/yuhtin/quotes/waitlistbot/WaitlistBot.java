@@ -2,15 +2,15 @@ package com.yuhtin.quotes.waitlistbot;
 
 import com.yuhtin.quotes.waitlistbot.bot.DiscordBot;
 import com.yuhtin.quotes.waitlistbot.command.CommandRegistry;
-import com.yuhtin.quotes.waitlistbot.command.impl.WaitlistCommand;
 import com.yuhtin.quotes.waitlistbot.config.Config;
 import com.yuhtin.quotes.waitlistbot.constants.BotConstants;
-import com.yuhtin.quotes.waitlistbot.listener.ReceiveDataListener;
+import com.yuhtin.quotes.waitlistbot.listener.RedisDataSub;
 import com.yuhtin.quotes.waitlistbot.repository.MongoClientManager;
 import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.interactions.commands.Command;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 
 import java.util.Date;
 import java.util.logging.ConsoleHandler;
@@ -27,6 +27,8 @@ public class WaitlistBot implements DiscordBot {
     @Getter private Config config;
     private JDA jda;
 
+    private Jedis jedis;
+
     @Override
     public void onEnable() {
         formatLogger(logger);
@@ -34,6 +36,7 @@ public class WaitlistBot implements DiscordBot {
 
         loadConfig();
         setupMongoClient();
+        setupRedisClient();
 
         getLogger().info("Bot enabled!");
     }
@@ -43,18 +46,13 @@ public class WaitlistBot implements DiscordBot {
         getLogger().info("Bot ready!");
         getLogger().info("Logged in as @" + jda.getSelfUser().getName());
 
-        registerListeners();
         CommandRegistry.of(jda).register();
+        registerPubSub();
     }
 
     @Override
     public void serve(JDA jda) {
         this.jda = jda;
-    }
-
-    private void registerListeners() {
-        ReceiveDataListener receiveDataListener = new ReceiveDataListener(config);
-        jda.addEventListener(receiveDataListener);
     }
 
     private void loadConfig() {
@@ -65,6 +63,17 @@ public class WaitlistBot implements DiscordBot {
         }
 
         logger.info("Config loaded!");
+    }
+
+    private void setupRedisClient() {
+        jedis = new Jedis(new HostAndPort(config.getRedisAddress(), 6379));
+        jedis.auth(config.getRedisPassword());
+
+        logger.info("Redis client connected!");
+    }
+
+    private void registerPubSub() {
+        RedisDataSub.of(config, jda).register(jedis);
     }
 
     private void setupMongoClient() {

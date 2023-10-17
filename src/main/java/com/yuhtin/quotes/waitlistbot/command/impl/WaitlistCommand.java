@@ -20,7 +20,7 @@ public class WaitlistCommand implements Command {
     public void execute(CommandInteraction command, InteractionHook hook) {
         User user = UserRepository.instance().findByDiscordName(command.getUser().getName());
         if (user == null) {
-            hook.sendMessage("You are not in the waitlist!").setEphemeral(true).queue();
+            hook.sendMessage("📌 You are not in the waitlist!\n🔹 Join us in https://soba.xyz").setEphemeral(true).queue();
             return;
         }
 

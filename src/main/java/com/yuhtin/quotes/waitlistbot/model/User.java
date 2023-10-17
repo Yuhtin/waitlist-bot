@@ -17,6 +17,7 @@ public class User {
     private final long creationDate;
 
     private String discordName;
+    private int position;
     private int referrals;
 
 }
