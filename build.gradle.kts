@@ -10,7 +10,7 @@ group = "com.yuhtin.quotes"
 version = "1.0-SNAPSHOT"
 
 application {
-    mainClass = "com.yuhtin.quotes.waitlistbot.WaitlistBot"
+    mainClass = "com.yuhtin.quotes.waitlistbot.startup.Startup"
 }
 
 repositories {

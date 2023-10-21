@@ -6,24 +6,23 @@ import com.yuhtin.quotes.waitlistbot.command.CommandInfo;
 import com.yuhtin.quotes.waitlistbot.config.Config;
 import com.yuhtin.quotes.waitlistbot.model.User;
 import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
-import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 @CommandInfo(
-        names = {"position"},
-        description = "Shows your waitlist position"
+        names = {"invite"},
+        description = "Shows your invite link"
 )
-public class PositionCommand implements Command {
+public class InviteCommand implements Command {
 
     @Override
     public void execute(CommandInteraction command) {
-        ReplyCallbackAction callback = command.deferReply();
+        InteractionHook hook = command.deferReply(true).complete();
         Config config = WaitlistBot.getInstance().getConfig();
 
         User user = UserRepository.instance().findByDiscordName(command.getUser().getName());
         if (user == null) {
-            callback.setEphemeral(true)
-                    .queue(hook -> hook.sendMessage(config.getUserNotFound()).queue());
+            hook.sendMessage(config.getUserNotFound()).setEphemeral(true).queue();
             return;
         }
 
@@ -32,9 +31,8 @@ public class PositionCommand implements Command {
             user.save();
         }
 
-        callback.queue(hook -> hook.sendMessage(config.getPositionMessage()
-                        .replace("%user%", command.getUser().getAsMention())
-                        .replace("%position%", String.valueOf(user.position()))
-                ).queue());
+        hook.sendMessage(config.getInviteMessage().replace("%link%", user.inviteLink()))
+                .setEphemeral(true)
+                .queue();
     }
 }

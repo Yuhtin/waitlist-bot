@@ -3,10 +3,9 @@ package com.yuhtin.quotes.waitlistbot.repository;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import com.yuhtin.quotes.waitlistbot.model.User;
+import com.yuhtin.quotes.waitlistbot.model.RemindUser;
 import com.yuhtin.quotes.waitlistbot.repository.mongo.MongoRepository;
 import com.yuhtin.quotes.waitlistbot.repository.mongo.OperationType;
 import com.yuhtin.quotes.waitlistbot.repository.mongo.RepositoryCollection;
@@ -22,40 +21,28 @@ import java.util.LinkedList;
  * @author <a href="https://github.com/Yuhtin">Yuhtin</a>
  */
 @Accessors(fluent = true)
-public class UserRepository implements MongoRepository<User> {
+public class RemindRepository implements MongoRepository<RemindUser> {
 
     @Getter
-    private static final UserRepository instance = new UserRepository();
+    private static final RemindRepository instance = new RemindRepository();
     private static final Gson GSON = new GsonBuilder().create();
 
-    @RepositoryCollection(collectionName = "users")
+    @RepositoryCollection(collectionName = "remind_users")
     private MongoCollection<Document> userTable;
 
     @Nullable
     @Override
-    public User find(String memberId) {
-        val document = userTable.find(Filters.eq("memberId", memberId)).first();
+    public RemindUser find(String memberId) {
+        val document = userTable.find(Filters.eq("_id", memberId)).first();
         if (document == null) return null;
 
-        return GSON.fromJson(document.toJson(), User.class);
-    }
-
-    @Nullable
-    public User findByDiscordName(String discordName) {
-        val document = userTable.find(Filters.eq("discordName", discordName.toLowerCase())).first();
-        if (document == null) return null;
-
-        return GSON.fromJson(document.toJson(), User.class);
+        return GSON.fromJson(document.toJson(), RemindUser.class);
     }
 
     @Override
-    public OperationType insert(User data) {
-        User user = find(data.memberId());
+    public OperationType insert(RemindUser data) {
+        RemindUser user = find(String.valueOf(data._id()));
         if (user != null) {
-            if (data.discordId() == 0) {
-                data.discordId(user.discordId());
-            }
-
             replace(data);
             return OperationType.REPLACE;
         }
@@ -65,24 +52,24 @@ public class UserRepository implements MongoRepository<User> {
     }
 
     @Override
-    public void replace(User data) {
-        userTable.replaceOne(Filters.eq("memberId", data.memberId()), Document.parse(GSON.toJson(data)));
+    public void replace(RemindUser data) {
+        userTable.replaceOne(Filters.eq("_id", data._id()), Document.parse(GSON.toJson(data)));
     }
 
     @Override
     public void delete(String memberId) {
-        userTable.deleteOne(Filters.eq("memberId", memberId));
+        userTable.deleteOne(Filters.eq("_id", memberId));
     }
 
     @Override
-    public LinkedList<User> query(int maxValues) {
-        val documents = Lists.newArrayList(userTable.find().sort(new BasicDBObject("referrals", -1)).limit(maxValues).iterator());
+    public LinkedList<RemindUser> query(int maxValues) {
+        val documents = Lists.newArrayList(userTable.find());
         if (documents.isEmpty()) return Lists.newLinkedList();
 
-        LinkedList<User> users = Lists.newLinkedList();
+        LinkedList<RemindUser> users = Lists.newLinkedList();
         for (Document document : documents) {
             val json = document.toJson();
-            users.add(GSON.fromJson(json, User.class));
+            users.add(GSON.fromJson(json, RemindUser.class));
         }
 
         return users;

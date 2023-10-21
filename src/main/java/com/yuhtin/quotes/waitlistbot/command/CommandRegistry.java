@@ -28,20 +28,23 @@ public class CommandRegistry {
             return;
         }
 
-        List<CommandDataImpl> commands = new ArrayList<>();
         CommandMap commandMap = CommandCatcher.getInstance().getCommandMap();
+
+        List<CommandDataImpl> commands = new ArrayList<>();
         for (val info : classPath.getTopLevelClassesRecursive("com.yuhtin.quotes.waitlistbot.command.impl")) {
             try {
-                Class name = Class.forName(info.getName());
-                Object object = name.newInstance();
+                Class className = Class.forName(info.getName());
+                Object object = className.newInstance();
 
-                if (name.isAnnotationPresent(CommandInfo.class)) {
+                if (className.isAnnotationPresent(CommandInfo.class)) {
                     Command command = (Command) object;
-                    CommandInfo handler = (CommandInfo) name.getAnnotation(CommandInfo.class);
+                    CommandInfo handler = (CommandInfo) className.getAnnotation(CommandInfo.class);
 
-                    commandMap.register(handler.name(), command);
+                    for (String name : handler.names()) {
+                        commandMap.register(name, command);
+                        commands.add(new CommandDataImpl(name, handler.description()));
+                    }
 
-                    commands.add(new CommandDataImpl(handler.name(), handler.description()));
                 } else throw new InstantiationException();
             } catch (Exception exception) {
                 exception.printStackTrace();

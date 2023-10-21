@@ -8,7 +8,7 @@ public interface MongoRepository<T> {
 
     @Nullable T find(String memberId);
 
-    void insert(T data);
+    OperationType insert(T data);
 
     void replace(T data);
 

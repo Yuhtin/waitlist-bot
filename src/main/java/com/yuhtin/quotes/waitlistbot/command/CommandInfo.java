@@ -4,6 +4,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="https://github.com/Yuhtin">Yuhtin</a>
@@ -13,7 +15,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface CommandInfo {
 
-    String name();
+    String[] names();
     String description();
 
 }

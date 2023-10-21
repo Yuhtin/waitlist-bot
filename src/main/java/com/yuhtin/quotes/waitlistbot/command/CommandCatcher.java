@@ -1,11 +1,14 @@
 package com.yuhtin.quotes.waitlistbot.command;
 
+import com.yuhtin.quotes.waitlistbot.WaitlistBot;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.logging.Logger;
 
 /**
  * @author Yuhtin
@@ -20,14 +23,12 @@ public final class CommandCatcher extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        InteractionHook hook = event.deferReply().complete();
-
         Command command = commandMap.getCommands().get(event.getName());
         try {
-            command.execute(event, hook);
+            command.execute(event);
         } catch (Exception exception) {
             exception.printStackTrace();
-            hook.sendMessage("ERRO!").queue();
+            event.getHook().sendMessage("ERRO!").setEphemeral(true).queue();
         }
     }
 

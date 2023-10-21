@@ -12,14 +12,7 @@ import java.util.stream.Collectors;
 public class Startup {
 
     public static void main(String[] args) {
-        BotProperties properties = BotProperties.builder()
-                .disabledCaches(Arrays.stream(CacheFlag.values()).collect(Collectors.toList()))
-                .enabledIntents(Arrays.asList(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT))
-                .build();
-
-        DiscordBotConnector
-                .connect(WaitlistBot.getInstance())
-                .with(properties);
+        DiscordBotConnector.connect(WaitlistBot.getInstance());
     }
 
 }

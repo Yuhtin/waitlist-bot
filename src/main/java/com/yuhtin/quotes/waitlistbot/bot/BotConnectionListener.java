@@ -1,5 +1,6 @@
 package com.yuhtin.quotes.waitlistbot.bot;
 
+import com.yuhtin.quotes.waitlistbot.task.TaskHelper;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -14,6 +15,6 @@ public class BotConnectionListener extends ListenerAdapter {
     @Override
     public void onReady(@NotNull ReadyEvent event) {
         bot.serve(event.getJDA());
-        bot.onReady();
+        TaskHelper.runAsync(bot::onReady);
     }
 }
