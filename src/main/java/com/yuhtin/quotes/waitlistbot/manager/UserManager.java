@@ -25,23 +25,23 @@ public class UserManager {
     private final JDA jda;
     private final Config config;
 
-    public void announceReferralUse(String newUser, String referralUserId) {
-        if (referralUserId == null) {
-            LOGGER.info("User joined without referral!");
-            return;
-        }
+    public void announceReferralUse(User newUser, String referralUserId) {
+        if (referralUserId == null || referralUserId.isEmpty() || referralUserId.equalsIgnoreCase("none")) return;
+        if (newUser.memberId().equals(referralUserId)) return;
 
         User user = UserRepository.instance().find(referralUserId);
         if (user == null) return;
 
-        LOGGER.info("User joined with referral of " + user.discordName());
-
         user.referrals(user.referrals() + 1);
         user.save();
 
-        sendReferralUsedMessage(newUser, user);
+        if (user.discordName() == null) return;
 
-        if (user.referrals() > 2) return;
+        if (newUser.discordName() != null) {
+            sendReferralUsedMessage(newUser.discordName(), user);
+        }
+
+        if (user.referrals() != 2) return;
 
         JDA jda = WaitlistBot.getInstance().getJda();
         Guild guildById = jda.getGuildById(WaitlistBot.getInstance().getConfig().getGuildId());
@@ -54,6 +54,8 @@ public class UserManager {
     }
 
     private void sendReferralUsedMessage(String newUser, User user) {
+        if (user.discordName() == null) return;
+
         TextChannel channel = jda.getTextChannelById(config.getWaitlistChatChannelId());
         if (channel == null) {
             throw new IllegalStateException("Waitlist chat channel not found!");
@@ -75,6 +77,8 @@ public class UserManager {
     }
 
     private void sendAchievedAccessRoleMessage(JDA jda, User user) {
+        if (user.discordName() == null) return;
+
         TextChannel channel = jda.getTextChannelById(config.getWaitlistChatChannelId());
         if (channel == null) {
             throw new IllegalStateException("Waitlist chat channel not found!");
@@ -90,7 +94,10 @@ public class UserManager {
             throw new IllegalStateException("Access role not found!");
         }
 
-        guildById.addRoleToMember(UserSnowflake.fromId(user.retrieveDiscordId()), role).queue();
+        long id = user.retrieveDiscordId();
+        if (id == 0) return;
+
+        guildById.addRoleToMember(UserSnowflake.fromId(id), role).queue();
     }
 
 }

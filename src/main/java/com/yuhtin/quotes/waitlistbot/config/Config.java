@@ -19,6 +19,8 @@ public class Config {
     private long accessRoleId;
     private long guildId;
 
+    private String zootoolsListId = "G68eAPC5dtuuiXIfnoNw";
+
     private String mongoAddress = "localhost";
     private String mongoLogin = "user:password";
     private String mongoDatabase = "test";

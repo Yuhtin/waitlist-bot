@@ -52,9 +52,7 @@ public class UserRepository implements MongoRepository<User> {
     public OperationType insert(User data) {
         User user = find(data.memberId());
         if (user != null) {
-            if (data.discordId() == 0) {
-                data.discordId(user.discordId());
-            }
+            data.pushLocalInfo(user);
 
             replace(data);
             return OperationType.REPLACE;

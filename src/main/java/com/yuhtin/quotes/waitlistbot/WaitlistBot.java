@@ -84,7 +84,7 @@ public class WaitlistBot implements DiscordBot {
     }
 
     private void registerPubSub() {
-        DataReceiverListener.of(userManager).register(jedis);
+        DataReceiverListener.of(config, userManager).register(jedis);
     }
 
     private void registerRemindTask() {

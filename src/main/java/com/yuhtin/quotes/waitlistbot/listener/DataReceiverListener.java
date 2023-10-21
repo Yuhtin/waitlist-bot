@@ -3,6 +3,7 @@ package com.yuhtin.quotes.waitlistbot.listener;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
+import com.yuhtin.quotes.waitlistbot.config.Config;
 import com.yuhtin.quotes.waitlistbot.manager.UserManager;
 import com.yuhtin.quotes.waitlistbot.model.User;
 import com.yuhtin.quotes.waitlistbot.model.RedisData;
@@ -25,6 +26,7 @@ public class DataReceiverListener extends JedisPubSub {
     private static final Logger LOGGER = Logger.getLogger("WaitlistBot");
     private static final Gson GSON = new Gson();
 
+    private final Config config;
     private final UserManager manager;
 
     private final Cache<String, Object> timeout = CacheBuilder.newBuilder()
@@ -49,12 +51,17 @@ public class DataReceiverListener extends JedisPubSub {
         RedisData data = GSON.fromJson(message, RedisData.class);
         if (data == null) return;
 
+        if (!config.getZootoolsListId().equals(data.getListId())) return;
+
+        String discordName = data.getDiscord().contains("#")
+                ? null
+                : data.getDiscord().toLowerCase();
+
         User user = User.builder()
                 .memberId(data.getId())
                 .email(data.getEmail())
-                .discordName(data.getDiscord().toLowerCase())
+                .discordName(discordName)
                 .position(data.getPosition())
-                .listId(data.getListId())
                 .build();
 
         // avoid zootools webhook spam
@@ -65,15 +72,13 @@ public class DataReceiverListener extends JedisPubSub {
         TaskHelper.runAsync(() -> {
             OperationType operation = UserRepository.instance().insert(user);
             if (operation == OperationType.INSERT) {
-                manager.announceReferralUse(
-                        data.getDiscord(),
-                        data.getReferralUserId()
-                );
-
+                manager.announceReferralUse(user, data.getReferralUserId());
                 LOGGER.info("User " + user.email() + " added in database!");
             }
 
-            manager.updateSubscribersChannelCount(data.getSubscribersCount());
+            if (data.getSubscribersCount() != -1) {
+                manager.updateSubscribersChannelCount(data.getSubscribersCount());
+            }
         });
     }
 
