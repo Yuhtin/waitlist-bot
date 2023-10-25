@@ -17,11 +17,11 @@ public class RemindTaskRunnable extends TimerTask {
 
     @Override
     public void run() {
-        for (RemindUser remindUser : RemindRepository.instance().query(-1)) {
+        for (RemindUser remindUser : RemindRepository.instance().selectAll()) {
             TaskHelper.runAsync(() -> {
                 if (remindUser.remindMillis() > System.currentTimeMillis()) return;
 
-                instance.getJda().retrieveUserById(remindUser._id()).queue(user -> {
+                instance.getJda().retrieveUserById(remindUser.userId()).queue(user -> {
                     user.openPrivateChannel().queue(channel -> {
                         String text = instance.getConfig().getRemindMessage()
                                 .replace("%user%", user.getAsMention())
@@ -32,7 +32,7 @@ public class RemindTaskRunnable extends TimerTask {
                     });
                 });
 
-                RemindRepository.instance().delete(String.valueOf(remindUser._id()));
+                RemindRepository.instance().delete(remindUser.userId());
             });
         }
     }

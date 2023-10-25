@@ -1,77 +1,72 @@
 package com.yuhtin.quotes.waitlistbot.repository;
 
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
+import com.henryfabio.sqlprovider.executor.SQLExecutor;
 import com.yuhtin.quotes.waitlistbot.model.RemindUser;
-import com.yuhtin.quotes.waitlistbot.repository.mongo.MongoRepository;
-import com.yuhtin.quotes.waitlistbot.repository.mongo.OperationType;
-import com.yuhtin.quotes.waitlistbot.repository.mongo.RepositoryCollection;
-import lombok.Getter;
-import lombok.experimental.Accessors;
-import lombok.val;
-import org.bson.Document;
-import org.jetbrains.annotations.Nullable;
+import com.yuhtin.quotes.waitlistbot.repository.adapters.RemindUserAdapter;
+import lombok.NoArgsConstructor;
 
-import java.util.LinkedList;
+import java.util.Set;
 
 /**
  * @author <a href="https://github.com/Yuhtin">Yuhtin</a>
  */
-@Accessors(fluent = true)
-public class RemindRepository implements MongoRepository<RemindUser> {
+@NoArgsConstructor
+public final class RemindRepository {
 
-    @Getter
-    private static final RemindRepository instance = new RemindRepository();
-    private static final Gson GSON = new GsonBuilder().create();
 
-    @RepositoryCollection(collectionName = "remind_users")
-    private MongoCollection<Document> userTable;
+    private static final RemindRepository INSTANCE = new RemindRepository();
+    private static final String TABLE = "waitlist_reminders";
 
-    @Nullable
-    @Override
-    public RemindUser find(String memberId) {
-        val document = userTable.find(Filters.eq("_id", memberId)).first();
-        if (document == null) return null;
+    private SQLExecutor sqlExecutor;
 
-        return GSON.fromJson(document.toJson(), RemindUser.class);
+    public void init(SQLExecutor sqlExecutor) {
+        this.sqlExecutor = sqlExecutor;
+        createTable();
     }
 
-    @Override
-    public OperationType insert(RemindUser data) {
-        RemindUser user = find(String.valueOf(data._id()));
-        if (user != null) {
-            replace(data);
-            return OperationType.REPLACE;
-        }
-
-        userTable.insertOne(Document.parse(GSON.toJson(data)));
-        return OperationType.INSERT;
+    public void createTable() {
+        sqlExecutor.updateQuery("CREATE TABLE IF NOT EXISTS " + TABLE + "(" +
+                "userId LONG NOT NULL PRIMARY KEY," +
+                "remindMillis LONG DEFAULT -1" +
+                ");"
+        );
     }
 
-    @Override
-    public void replace(RemindUser data) {
-        userTable.replaceOne(Filters.eq("_id", data._id()), Document.parse(GSON.toJson(data)));
+    private RemindUser findRemindDelay(long userId) {
+        return sqlExecutor.resultOneQuery(
+                "SELECT * FROM " + TABLE + " WHERE userId = '" + userId + "'",
+                statement -> {},
+                RemindUserAdapter.class
+        );
     }
 
-    @Override
-    public void delete(String memberId) {
-        userTable.deleteOne(Filters.eq("_id", memberId));
+    public Set<RemindUser> selectAll() {
+        return sqlExecutor.resultManyQuery(
+                "SELECT * FROM " + TABLE,
+                k -> {},
+                RemindUserAdapter.class
+        );
     }
 
-    @Override
-    public LinkedList<RemindUser> query(int maxValues) {
-        val documents = Lists.newArrayList(userTable.find());
-        if (documents.isEmpty()) return Lists.newLinkedList();
-
-        LinkedList<RemindUser> users = Lists.newLinkedList();
-        for (Document document : documents) {
-            val json = document.toJson();
-            users.add(GSON.fromJson(json, RemindUser.class));
-        }
-
-        return users;
+    public void insert(RemindUser data) {
+        this.sqlExecutor.updateQuery(
+                String.format("REPLACE INTO %s VALUES(?, ?)", TABLE),
+                statement -> {
+                    statement.set(1, data.userId());
+                    statement.set(2, data.remindMillis());
+                }
+        );
     }
+
+    public void delete(long userId) {
+        this.sqlExecutor.updateQuery(
+                String.format("DELETE FROM %s WHERE userId = ?", TABLE),
+                statement -> statement.set(1, userId)
+        );
+    }
+
+    public static RemindRepository instance() {
+        return INSTANCE;
+    }
+
 }

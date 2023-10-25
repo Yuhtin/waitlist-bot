@@ -1,14 +1,13 @@
 package com.yuhtin.quotes.waitlistbot;
 
+import com.henryfabio.sqlprovider.connector.type.impl.SQLiteDatabaseType;
+import com.henryfabio.sqlprovider.executor.SQLExecutor;
 import com.yuhtin.quotes.waitlistbot.bot.DiscordBot;
 import com.yuhtin.quotes.waitlistbot.command.CommandRegistry;
 import com.yuhtin.quotes.waitlistbot.config.Config;
-import com.yuhtin.quotes.waitlistbot.constants.BotConstants;
 import com.yuhtin.quotes.waitlistbot.listener.DataReceiverListener;
-import com.yuhtin.quotes.waitlistbot.listener.MessageChatListener;
-import com.yuhtin.quotes.waitlistbot.listener.UserJoinGuildListener;
 import com.yuhtin.quotes.waitlistbot.manager.UserManager;
-import com.yuhtin.quotes.waitlistbot.repository.MongoClientManager;
+import com.yuhtin.quotes.waitlistbot.repository.RemindRepository;
 import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
 import com.yuhtin.quotes.waitlistbot.task.RemindTaskRunnable;
 import com.yuhtin.quotes.waitlistbot.task.TaskHelper;
@@ -17,6 +16,7 @@ import net.dv8tion.jda.api.JDA;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 
+import java.io.File;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
@@ -42,7 +42,7 @@ public class WaitlistBot implements DiscordBot {
         getLogger().info("Enabling bot...");
 
         loadConfig();
-        setupMongoClient();
+        setupSQL();
         setupRedisClient();
 
         getLogger().info("Bot enabled!");
@@ -58,7 +58,7 @@ public class WaitlistBot implements DiscordBot {
         this.userManager = new UserManager(jda, config);
 
         registerPubSub();
-        registerRemindTask();
+        registerTasks();
     }
 
     @Override
@@ -87,20 +87,27 @@ public class WaitlistBot implements DiscordBot {
         DataReceiverListener.of(config, userManager).register(jedis);
     }
 
-    private void registerRemindTask() {
+    private void registerTasks() {
         RemindTaskRunnable remindTaskRunnable = new RemindTaskRunnable(this);
         TaskHelper.runTaskTimerAsync(remindTaskRunnable, 10, 10, TimeUnit.MINUTES);
     }
 
-    private void setupMongoClient() {
-        String mongoUri = BotConstants.MONGO_URI
-                .replace("$login$", config.getMongoLogin())
-                .replace("$address$", config.getMongoAddress());
+    private void setupSQL() {
+        File file = new File("./waitlist.db");
+        if (!file.exists()) {
+            try {
+                if (!file.createNewFile()) {
+                    throw new IllegalStateException("Couldn't create database file!");
+                }
+            } catch (Exception exception) {
+                throw new IllegalStateException("Couldn't create database file!", exception);
+            }
+        }
 
-        MongoClientManager mongoClientManager = MongoClientManager.getInstance();
-        mongoClientManager.load(mongoUri, config.getMongoDatabase());
+        SQLExecutor executor = new SQLExecutor(new SQLiteDatabaseType(file).connect());
 
-        mongoClientManager.injectTables(UserRepository.instance());
+        UserRepository.instance().init(executor);
+        RemindRepository.instance().init(executor);
     }
 
     private void formatLogger(Logger logger) {

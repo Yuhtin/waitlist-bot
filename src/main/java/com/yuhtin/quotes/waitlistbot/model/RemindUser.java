@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 public class RemindUser {
 
-    private final long _id;
+    private final long userId;
     private final long remindMillis;
 
 }

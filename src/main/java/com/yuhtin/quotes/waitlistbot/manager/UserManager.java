@@ -1,10 +1,16 @@
 package com.yuhtin.quotes.waitlistbot.manager;
 
+import com.google.gson.Gson;
 import com.yuhtin.quotes.waitlistbot.WaitlistBot;
 import com.yuhtin.quotes.waitlistbot.config.Config;
+import com.yuhtin.quotes.waitlistbot.constants.BotConstants;
 import com.yuhtin.quotes.waitlistbot.model.User;
 import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
+import com.yuhtin.quotes.waitlistbot.util.HTTPRequest;
+import com.yuhtin.quotes.waitlistbot.util.Promise;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -25,11 +31,34 @@ public class UserManager {
     private final JDA jda;
     private final Config config;
 
+    public void updateMemberPosition(String memberId) {
+        LOGGER.info("Updating " + memberId + " position");
+        Promise.supply(() -> HTTPRequest.to(
+                BotConstants.ZOOTOOLS_GET_USER_ENDPOINT
+                        .replace("{listId}", WaitlistBot.getInstance().getConfig().getZootoolsListId())
+                        .replace("{memberId}", memberId),
+                WaitlistBot.getInstance().getConfig().getZootoolsApiKey()
+        ).send()).then(response -> {
+            if (response == null) return;
+
+            User user = UserRepository.instance().findByMemberId(memberId);
+            if (user == null) return;
+
+            MemberResponse memberData = new Gson().fromJson(response.getResponse(), MemberResponse.class);
+            if (memberData == null) return;
+
+            user.position(memberData.getRankingPosition());
+            user.save();
+
+            LOGGER.info("→ Updated " + user.email() + " position to " + user.position());
+        });
+    }
+
     public void announceReferralUse(User newUser, String referralUserId) {
         if (referralUserId == null || referralUserId.isEmpty() || referralUserId.equalsIgnoreCase("none")) return;
         if (newUser.memberId().equals(referralUserId)) return;
 
-        User user = UserRepository.instance().find(referralUserId);
+        User user = UserRepository.instance().findByMemberId(referralUserId);
         if (user == null) return;
 
         user.referrals(user.referrals() + 1);
@@ -98,6 +127,14 @@ public class UserManager {
         if (id == 0) return;
 
         guildById.addRoleToMember(UserSnowflake.fromId(id), role).queue();
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    private static class MemberResponse {
+
+        private final int rankingPosition;
+
     }
 
 }

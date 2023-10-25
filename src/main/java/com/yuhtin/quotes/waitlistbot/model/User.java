@@ -1,7 +1,10 @@
 package com.yuhtin.quotes.waitlistbot.model;
 
 import com.yuhtin.quotes.waitlistbot.WaitlistBot;
+import com.yuhtin.quotes.waitlistbot.constants.BotConstants;
 import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
+import com.yuhtin.quotes.waitlistbot.util.HTTPRequest;
+import com.yuhtin.quotes.waitlistbot.util.Promise;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -18,9 +21,10 @@ public class User {
 
     private final String memberId;
     private final String email;
-    @Nullable private final String discordName;
-    private final int position;
+    @Nullable
+    private final String discordName;
 
+    private int position;
     private long discordId;
     private int referrals;
     private int messagesInChat;
@@ -48,27 +52,19 @@ public class User {
     }
 
     public void save() {
-        UserRepository.instance().replace(this);
+        UserRepository.instance().insert(this);
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "memberId='" + memberId + '\'' +
-                ", email='" + email + '\'' +
-                ", discordName='" + discordName + '\'' +
-                ", discordId=" + discordId +
-                ", position=" + position +
-                ", referrals=" + referrals +
-                '}';
-    }
+    public void givePoints(int points) {
+        Promise.supply(() -> HTTPRequest.to(BotConstants.ZOOTOOLS_GIVE_POINTS_ENDPOINT
+                        .replace("{listId}", WaitlistBot.getInstance().getConfig().getZootoolsListId())
+                        .replace("{memberId}", memberId),
+                WaitlistBot.getInstance().getConfig().getZootoolsApiKey(),
+                "{ points: " + points + " }"
+        ).send()).then(response -> {
+            if (response == null) return;
 
-    public void pushLocalInfo(User user) {
-        if (this.discordId == 0) {
-            this.discordId = user.discordId;
-        }
-
-        this.referrals = user.referrals;
-        this.messagesInChat = user.messagesInChat;
+            WaitlistBot.getInstance().getUserManager().updateMemberPosition(memberId);
+        });
     }
 }

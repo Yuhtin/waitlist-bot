@@ -20,6 +20,7 @@ public class Config {
     private long guildId;
 
     private String zootoolsListId = "G68eAPC5dtuuiXIfnoNw";
+    private String zootoolsApiKey = "none";
 
     private String mongoAddress = "localhost";
     private String mongoLogin = "user:password";

@@ -1,88 +1,97 @@
 package com.yuhtin.quotes.waitlistbot.repository;
 
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
+import com.henryfabio.sqlprovider.executor.SQLExecutor;
 import com.yuhtin.quotes.waitlistbot.model.User;
-import com.yuhtin.quotes.waitlistbot.repository.mongo.MongoRepository;
-import com.yuhtin.quotes.waitlistbot.repository.mongo.OperationType;
-import com.yuhtin.quotes.waitlistbot.repository.mongo.RepositoryCollection;
-import lombok.Getter;
-import lombok.experimental.Accessors;
-import lombok.val;
-import org.bson.Document;
-import org.jetbrains.annotations.Nullable;
+import com.yuhtin.quotes.waitlistbot.repository.adapters.UserAdapter;
+import lombok.NoArgsConstructor;
 
-import java.util.LinkedList;
+import java.util.Set;
 
 /**
  * @author <a href="https://github.com/Yuhtin">Yuhtin</a>
  */
-@Accessors(fluent = true)
-public class UserRepository implements MongoRepository<User> {
+@NoArgsConstructor
+public final class UserRepository {
 
-    @Getter
-    private static final UserRepository instance = new UserRepository();
-    private static final Gson GSON = new GsonBuilder().create();
 
-    @RepositoryCollection(collectionName = "users")
-    private MongoCollection<Document> userTable;
+    private static final UserRepository INSTANCE = new UserRepository();
+    private static final String TABLE = "waitlist_users";
 
-    @Nullable
-    @Override
-    public User find(String memberId) {
-        val document = userTable.find(Filters.eq("memberId", memberId)).first();
-        if (document == null) return null;
+    private SQLExecutor sqlExecutor;
 
-        return GSON.fromJson(document.toJson(), User.class);
+    public void init(SQLExecutor sqlExecutor) {
+        this.sqlExecutor = sqlExecutor;
+        createTable();
     }
 
-    @Nullable
+    public void createTable() {
+        sqlExecutor.updateQuery("CREATE TABLE IF NOT EXISTS " + TABLE + "(" +
+                "memberId LONGTEXT NOT NULL PRIMARY KEY," +
+                "email LONGTEXT NOT NULL," +
+                "discordName LONGTEXT NULL," +
+                "position INTEGER NOT NULL DEFAULT -1," +
+                "discordId LONG DEFAULT 0," +
+                "referrals INTEGER DEFAULT 0," +
+                "messagesInChat INTEGER DEFAULT 0" +
+                ");"
+        );
+    }
+
+    private User selectOneQuery(String query) {
+        return sqlExecutor.resultOneQuery(
+                "SELECT * FROM " + TABLE + " " + query,
+                statement -> {
+                },
+                UserAdapter.class
+        );
+    }
+
+    public User findByEmail(String owner) {
+        return selectOneQuery("WHERE email = '" + owner + "'");
+    }
+
+    public User findByDiscordId(long discordId) {
+        return selectOneQuery("WHERE discordId = " + discordId);
+    }
+
+    public User findByMemberId(String memberId) {
+        return selectOneQuery("WHERE memberId = '" + memberId + "'");
+    }
+
     public User findByDiscordName(String discordName) {
-        val document = userTable.find(Filters.eq("discordName", discordName.toLowerCase())).first();
-        if (document == null) return null;
-
-        return GSON.fromJson(document.toJson(), User.class);
+        return selectOneQuery("WHERE discordName = '" + discordName + "'");
     }
 
-    @Override
+    public Set<User> selectAll(String query) {
+        return sqlExecutor.resultManyQuery(
+                "SELECT * FROM " + TABLE + " " + query,
+                k -> {
+                },
+                UserAdapter.class
+        );
+    }
+
     public OperationType insert(User data) {
-        User user = find(data.memberId());
-        if (user != null) {
-            data.pushLocalInfo(user);
+        User user = findByMemberId(data.memberId());
 
-            replace(data);
-            return OperationType.REPLACE;
-        }
+        this.sqlExecutor.updateQuery(
+                String.format("REPLACE INTO %s VALUES(?, ?, ?, ?, ?, ?, ?)", TABLE),
+                statement -> {
+                    statement.set(1, data.memberId());
+                    statement.set(2, data.email());
+                    statement.set(3, data.discordName());
+                    statement.set(4, data.position());
+                    statement.set(5, data.retrieveDiscordId());
+                    statement.set(6, data.referrals());
+                    statement.set(7, data.messagesInChat());
+                }
+        );
 
-        userTable.insertOne(Document.parse(GSON.toJson(data)));
-        return OperationType.INSERT;
+        return user == null ? OperationType.INSERT : OperationType.UPDATE;
     }
 
-    @Override
-    public void replace(User data) {
-        userTable.replaceOne(Filters.eq("memberId", data.memberId()), Document.parse(GSON.toJson(data)));
+    public static UserRepository instance() {
+        return INSTANCE;
     }
 
-    @Override
-    public void delete(String memberId) {
-        userTable.deleteOne(Filters.eq("memberId", memberId));
-    }
-
-    @Override
-    public LinkedList<User> query(int maxValues) {
-        val documents = Lists.newArrayList(userTable.find().sort(new BasicDBObject("referrals", -1)).limit(maxValues).iterator());
-        if (documents.isEmpty()) return Lists.newLinkedList();
-
-        LinkedList<User> users = Lists.newLinkedList();
-        for (Document document : documents) {
-            val json = document.toJson();
-            users.add(GSON.fromJson(json, User.class));
-        }
-
-        return users;
-    }
 }

@@ -8,7 +8,7 @@ import com.yuhtin.quotes.waitlistbot.manager.UserManager;
 import com.yuhtin.quotes.waitlistbot.model.User;
 import com.yuhtin.quotes.waitlistbot.model.RedisData;
 import com.yuhtin.quotes.waitlistbot.repository.UserRepository;
-import com.yuhtin.quotes.waitlistbot.repository.mongo.OperationType;
+import com.yuhtin.quotes.waitlistbot.repository.OperationType;
 import com.yuhtin.quotes.waitlistbot.task.TaskHelper;
 import lombok.AllArgsConstructor;
 import redis.clients.jedis.Jedis;
@@ -53,9 +53,7 @@ public class DataReceiverListener extends JedisPubSub {
 
         if (!config.getZootoolsListId().equals(data.getListId())) return;
 
-        String discordName = data.getDiscord().contains("#")
-                ? null
-                : data.getDiscord().toLowerCase();
+        String discordName = normalizeDiscordName(data.getDiscord());
 
         User user = User.builder()
                 .memberId(data.getId())
@@ -80,6 +78,11 @@ public class DataReceiverListener extends JedisPubSub {
                 manager.updateSubscribersChannelCount(data.getSubscribersCount());
             }
         });
+    }
+
+    private String normalizeDiscordName(String discord) {
+        if (discord == null) return null;
+        return discord.contains("#") ? discord.split("#")[0] : discord;
     }
 
 }

@@ -15,6 +15,7 @@ application {
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -23,7 +24,9 @@ dependencies {
         exclude(group = "org.apache.logging.log4j")
     }
 
-    implementation("org.mongodb:mongodb-driver-sync:4.4.0")
+    // sqlite driver
+    implementation("org.xerial:sqlite-jdbc:3.43.2.1")
+    implementation("com.github.HenryFabio:sql-provider:9561f20fd2")
     implementation("com.google.guava:guava:31.0.1-jre")
     implementation("com.google.code.gson:gson:2.8.8")
 

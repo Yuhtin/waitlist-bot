@@ -31,6 +31,11 @@ public class MessageChatListener extends ListenerAdapter {
 
         user.messagesInChat(user.messagesInChat() + 1);
         user.save();
+
+        if (user.messagesInChat() == 4 || user.messagesInChat() == 20) {
+            user.givePoints(10);
+            event.getMessage().addReaction(Emoji.fromUnicode("U+1F389")).queue();
+        }
     }
 
 }
