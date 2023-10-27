@@ -32,7 +32,6 @@ public class UserManager {
     private final Config config;
 
     public void updateMemberPosition(String memberId) {
-        LOGGER.info("Updating " + memberId + " position");
         Promise.supply(() -> HTTPRequest.to(
                 BotConstants.ZOOTOOLS_GET_USER_ENDPOINT
                         .replace("{listId}", WaitlistBot.getInstance().getConfig().getZootoolsListId())

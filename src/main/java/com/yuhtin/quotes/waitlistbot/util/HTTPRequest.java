@@ -36,8 +36,8 @@ public class HTTPRequest {
             URL url = new URL(this.url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-            connection.setConnectTimeout(500);
-            connection.setReadTimeout(500);
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
 
             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
             connection.setRequestProperty("Authorization", "Bearer " + webToken);
