@@ -22,10 +22,6 @@ public class Config {
     private String zootoolsListId = "G68eAPC5dtuuiXIfnoNw";
     private String zootoolsApiKey = "none";
 
-    private String mongoAddress = "localhost";
-    private String mongoLogin = "user:password";
-    private String mongoDatabase = "test";
-
     private String redisAddress = "localhost";
     private String redisPassword = "test";
 

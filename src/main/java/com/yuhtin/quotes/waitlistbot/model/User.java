@@ -60,7 +60,7 @@ public class User {
                         .replace("{listId}", WaitlistBot.getInstance().getConfig().getZootoolsListId())
                         .replace("{memberId}", memberId),
                 WaitlistBot.getInstance().getConfig().getZootoolsApiKey(),
-                "{ points: " + points + " }"
+                "{ \"points\": " + points + " }"
         ).send()).then(response -> {
             if (response == null) return;
 
