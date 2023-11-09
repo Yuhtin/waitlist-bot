@@ -34,6 +34,7 @@ public class HTTPRequest {
 
         try {
             URL url = new URL(this.url);
+
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(5000);
@@ -45,8 +46,8 @@ public class HTTPRequest {
             if (body != null) {
                 connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
-                connection.getOutputStream().write(body.getBytes());
                 connection.setRequestProperty("Content-Type", "application/json");
+                connection.getOutputStream().write(body.getBytes());
             }
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));

@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
+import static com.yuhtin.quotes.waitlistbot.util.DiscordUtil.normalizeDiscordName;
+
 /**
  * @author <a href="https://github.com/Yuhtin">Yuhtin</a>
  */
@@ -59,7 +61,8 @@ public final class UserRepository {
     }
 
     public User findByDiscordName(String discordName) {
-        return selectOneQuery("WHERE discordName = '" + discordName + "'");
+        if (discordName == null || discordName.isBlank()) return null;
+        return selectOneQuery("WHERE discordName = '" + normalizeDiscordName(discordName) + "' ORDER BY position ASC");
     }
 
     public Set<User> selectAll(String query) {
@@ -79,7 +82,7 @@ public final class UserRepository {
                 statement -> {
                     statement.set(1, data.memberId());
                     statement.set(2, data.email());
-                    statement.set(3, data.discordName());
+                    statement.set(3, data.discordName() == null ? null : data.discordName().toLowerCase());
                     statement.set(4, data.position());
                     statement.set(5, data.retrieveDiscordId());
                     statement.set(6, data.referrals());

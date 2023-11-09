@@ -46,10 +46,23 @@ public class UserManager {
             MemberResponse memberData = new Gson().fromJson(response.getResponse(), MemberResponse.class);
             if (memberData == null) return;
 
+            if (user.position() == memberData.getRankingPosition()) return;
+
             user.position(memberData.getRankingPosition());
             user.save();
 
             LOGGER.info("→ Updated " + user.email() + " position to " + user.position());
+
+            jda.retrieveUserById(user.retrieveDiscordId()).queue(discordUser -> {
+                if (discordUser == null || !discordUser.hasPrivateChannel()) return;
+
+                discordUser.openPrivateChannel().queue(channel -> channel.sendMessage(config.getPositionMessage()
+                        .replace("%user%", discordUser.getAsMention())
+                        .replace("%position%", String.valueOf(user.position()))
+                ).queue());
+
+                LOGGER.info("→ Sent a message to " + user.email() + " with the new position");
+            });
         });
     }
 

@@ -36,7 +36,5 @@ public class PositionCommand implements Command {
                 .replace("%user%", command.getUser().getAsMention())
                 .replace("%position%", String.valueOf(user.position()))
         ).queue());
-
-        WaitlistBot.getInstance().getUserManager().updateMemberPosition(user.memberId());
     }
 }

@@ -18,6 +18,8 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.logging.Logger;
 
+import static com.yuhtin.quotes.waitlistbot.util.DiscordUtil.normalizeDiscordName;
+
 @AllArgsConstructor(staticName = "of")
 public class DataReceiverListener extends JedisPubSub {
 
@@ -78,11 +80,6 @@ public class DataReceiverListener extends JedisPubSub {
                 manager.updateSubscribersChannelCount(data.getSubscribersCount());
             }
         });
-    }
-
-    private String normalizeDiscordName(String discord) {
-        if (discord == null) return null;
-        return discord.contains("#") ? discord.split("#")[0] : discord;
     }
 
 }

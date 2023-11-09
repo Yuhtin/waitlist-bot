@@ -11,6 +11,8 @@ import lombok.experimental.Accessors;
 import net.dv8tion.jda.api.JDA;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.logging.Logger;
+
 /**
  * @author <a href="https://github.com/Yuhtin">Yuhtin</a>
  */
@@ -31,7 +33,7 @@ public class User {
 
     public long retrieveDiscordId() {
         if (discordId == 0) {
-            if (discordName == null) return 0;
+            if (discordName == null || discordName.isBlank()) return 0;
 
             JDA jda = WaitlistBot.getInstance().getJda();
 
@@ -64,6 +66,7 @@ public class User {
         ).send()).then(response -> {
             if (response == null) return;
 
+            Logger.getLogger("WaitlistBot").info("→ Gave " + points + " points to " + email + " (Achieved " + messagesInChat + " messages)");
             WaitlistBot.getInstance().getUserManager().updateMemberPosition(memberId);
         });
     }

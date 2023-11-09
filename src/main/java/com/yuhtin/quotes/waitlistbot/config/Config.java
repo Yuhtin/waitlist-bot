@@ -14,6 +14,8 @@ public class Config {
 
     private static final Logger logger = Logger.getLogger("WaitlistBot");
 
+    private String debugMode = "false";
+
     private long subscribersCountChannelId;
     private long waitlistChatChannelId;
     private long accessRoleId;
@@ -27,6 +29,7 @@ public class Config {
 
     private String readMeMessage = "read-me";
     private String remindMessage = "remind-message";
+    private String remindToChatMessage = "remind-to-chat";
 
     private String userNotFound = "Sorry, we couldn't find your discord username on our waitlist signup. " +
             "Open our website again, click on the waitlist button, and then 'check your position'. " +
@@ -38,6 +41,8 @@ public class Config {
             "Discord DMs is used a lot to invite them.";
 
     private String positionMessage = "%user%, your waitlist position: #%position%";
+
+    private String updatedPositionMessage = "Hey %user%!, your position has been updated to #%position%";
 
     private String achievedAccessRoleMessage = "%user% invited two friends and has now access to more Discord channels!";
 

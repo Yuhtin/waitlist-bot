@@ -6,6 +6,6 @@ public class BotConstants {
     public static final String ENTERPRISE_ICON_URL = "https://www.soba.xyz/img/icons/favicon.ab6fbc.svg";
 
     public static final String ZOOTOOLS_GET_USER_ENDPOINT = "https://audience-api.zootools.co/lists/{listId}/members/{memberId}";
-    public static final String ZOOTOOLS_GIVE_POINTS_ENDPOINT = "https://audience-api.zootools.co/v1/lists/{listId}/members/{memberId}/increase-points";
+    public static final String ZOOTOOLS_GIVE_POINTS_ENDPOINT = "https://audience-consumer-api.zootools.co/v1/lists/{listId}/members/{memberId}/increase-points";
 
 }

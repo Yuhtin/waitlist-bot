@@ -28,7 +28,7 @@ public class RemindTaskRunnable extends TimerTask {
                                 .replace("%waitlistchannel%", String.valueOf(instance.getConfig().getWaitlistChatChannelId()));
 
                         channel.sendMessage(text).queue();
-                        instance.getLogger().info("Sent remind message to " + user.getName() + " successfully!");
+                        instance.getLogger().info("→ Sent remind message to " + user.getName() + " successfully!");
                     });
                 });
 
